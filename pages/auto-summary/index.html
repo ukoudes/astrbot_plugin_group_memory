@@ -1,0 +1,206 @@
+<!doctype html>
+<html lang="zh-CN">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <title>QQ群聊总结</title>
+  <link rel="stylesheet" href="./style.css?v=0.9.37">
+</head>
+<body>
+  <main>
+    <header>
+      <div class="title-row">
+        <h1>QQ群聊总结</h1><span class="version-badge">v0.9.37</span>
+      </div>
+      <button id="refresh" type="button" class="secondary">刷新</button>
+    </header>
+
+    <nav class="page-tabs" aria-label="页面内容">
+      <button id="tab-tasks" type="button" class="tab active" aria-selected="true">自动推送</button>
+      <button id="tab-settings" type="button" class="tab secondary" aria-selected="false">插件设置</button>
+    </nav>
+
+    <div id="toast" class="toast" role="status" aria-live="polite" hidden>
+      <span class="notice-message"></span><button class="notice-close" type="button" aria-label="关闭提示">×</button>
+    </div>
+
+    <div id="settings-view" hidden>
+      <form id="settings-form" class="settings-form">
+        <section aria-labelledby="settings-heading">
+            <h2 id="settings-heading">记录与访问</h2>
+            <div class="list-editor">
+              <h4>已添加的 QQ 群</h4>
+              <div id="group-entries" class="entry-list"></div>
+              <div class="entry-add group-entry-add">
+                <label>要记录的 QQ 群号<input id="new-group-id" type="text" inputmode="numeric" placeholder="输入群号"></label>
+                <label>显示名称（可选）<input id="new-group-name" type="text" maxlength="40" placeholder="例如：技术交流群"></label>
+                <button id="add-group" type="button" class="secondary">添加</button>
+              </div>
+              <p class="field-note">保存设置后，插件开始记录这些群收到的新消息。</p>
+            </div>
+            <div class="list-editor">
+              <h4>已授权查询的 QQ 号</h4>
+              <div id="reader-entries" class="entry-list"></div>
+              <div class="entry-add reader-entry-add">
+                <label>要授权的 QQ 号<input id="new-reader-id" type="text" inputmode="numeric" placeholder="输入 QQ 号"></label>
+                <button id="add-reader" type="button" class="secondary">添加</button>
+              </div>
+              <p class="field-note">授权后可私聊机器人查询已添加群的记录，也可接收 QQ 私聊推送。</p>
+            </div>
+            <div class="fields settings-pair retention-field"><label>本插件保留记录（天）<input id="setting-retention-days" type="number" min="1" max="3650"></label></div>
+            <p class="field-note">默认 30 天；更早的已保存记录会在后续清理时删除，不影响 QQ 原聊天记录。</p>
+        </section>
+        <section aria-labelledby="media-settings-heading">
+            <h2 id="media-settings-heading">图片读取</h2>
+            <div class="form-group">
+              <h3>读取与识别</h3>
+              <label class="check-option"><input id="setting-enable-media-read" type="checkbox">启用媒体读取（总开关）</label>
+              <p class="field-note">关闭后，手动总结和自动推送都不识别图片。</p>
+              <div class="fields settings-pair media-model-field">
+                <label>图片识别模型<select id="setting-media-vision-provider"></select></label>
+              </div>
+            </div>
+            <div class="form-group">
+              <h3>总结范围</h3>
+              <label class="check-option"><input id="setting-auto-summary-images" type="checkbox">自动推送尝试识别纳入总结的全部图片</label>
+              <div class="fields settings-pair media-manual-field">
+                <label>手动总结的默认媒体范围<select id="setting-summary-media-scope"><option value="全部媒体">全部媒体</option><option value="重点媒体">重点媒体</option></select></label>
+              </div>
+              <p class="field-note">手动提问时可明确要求读取全部媒体；自动推送不受此选项限制。</p>
+            </div>
+        </section>
+        <section aria-labelledby="email-settings-heading">
+            <h2 id="email-settings-heading">邮箱发送</h2>
+            <div class="fields settings-pair">
+              <label>SMTP 服务器<input id="setting-smtp-host" type="text" placeholder="smtp.qq.com"></label>
+              <label>端口<input id="setting-smtp-port" type="number" min="1" max="65535"></label>
+              <label>连接加密<select id="setting-smtp-security"><option>SSL/TLS</option><option>STARTTLS</option></select></label>
+              <label>SMTP 用户名<input id="setting-smtp-username" type="text" placeholder="通常是发件邮箱地址"></label>
+              <label>发件邮箱（可留空）<input id="setting-smtp-sender" type="email" placeholder="默认使用 SMTP 用户名"></label>
+              <label>设置新授权码（可留空）<input id="setting-smtp-password" type="password" autocomplete="new-password"></label>
+              <div id="smtp-saved-panel" class="saved-secret-panel" hidden>
+                <strong>已保存的 SMTP 授权码</strong>
+                <div class="saved-secret-controls">
+                  <input id="setting-smtp-current" type="password" value="••••••••" readonly aria-label="已保存的 SMTP 授权码">
+                  <button id="reveal-smtp-password" type="button" class="secondary">查看</button>
+                  <button id="delete-smtp-password" type="button" class="danger">删除授权码</button>
+                </div>
+              </div>
+            </div>
+        </section>
+        <section aria-labelledby="advanced-settings-heading">
+            <h2 id="advanced-settings-heading">高级设置</h2>
+            <div class="form-group">
+              <h3>图片读取性能</h3>
+              <div class="fields settings-pair">
+                <label>并行识图数（1～4）<input id="setting-media-batch-concurrency" type="number" min="1" max="4"></label>
+                <label>QQ 取图单次超时（5～60 秒）<input id="setting-media-get-image-timeout-seconds" type="number" min="5" max="60"></label>
+              </div>
+            </div>
+            <div class="form-group">
+              <h3>网页聊天查询</h3>
+              <label class="check-option"><input id="setting-enable-webchat" type="checkbox">允许从 AstrBot 网页聊天查询群记录</label>
+              <div class="list-editor webchat-editor">
+                <h4>已授权的网页查询者 ID</h4>
+                <div id="webchat-entries" class="entry-list"></div>
+                <div class="entry-add webchat-entry-add">
+                  <label>要授权的网页查询者 ID<input id="new-webchat-reader-id" type="text" maxlength="100" placeholder="输入 reader_id"></label>
+                  <button id="add-webchat-reader" type="button" class="secondary">添加</button>
+                </div>
+                <p class="field-note">在 AstrBot 网页聊天发送 /群记录身份，复制返回的 reader_id。</p>
+              </div>
+              <div class="fields settings-pair advanced-source-fields">
+                <label>QQ 平台 ID（多个 QQ 接入时）<input id="setting-webchat-qq-platform-id" type="text"></label>
+                <label>机器人 QQ 号（多个 QQ 接入时）<input id="setting-webchat-qq-bot-id" type="text"></label>
+              </div>
+            </div>
+        </section>
+        <section class="settings-save-card" aria-label="保存插件设置">
+          <p id="settings-status" class="view-status" role="status"></p>
+          <div class="form-actions"><button id="save-settings" type="submit">保存插件设置</button></div>
+        </section>
+      </form>
+    </div>
+
+    <div id="tasks-view">
+
+    <section aria-labelledby="add-heading">
+      <h2 id="add-heading">设置自动推送</h2>
+      <form id="add-form">
+        <div class="form-group">
+          <h3>推送目标</h3>
+          <div class="fields target-fields">
+            <label>群聊及接入<select id="source" required></select></label>
+          </div>
+          <div class="fields delivery-fields">
+            <fieldset class="choice-field">
+              <legend>接收方式</legend>
+              <div class="choice-options">
+                <label class="choice-option"><input type="radio" name="delivery-kind" value="qq" checked>QQ 私聊</label>
+                <label class="choice-option"><input type="radio" name="delivery-kind" value="email">邮箱</label>
+              </div>
+            </fieldset>
+            <label id="reader-field">接收总结的 QQ 号<select id="reader" required></select></label>
+            <label id="email-field" hidden>接收总结的邮箱<input id="email-to" type="email" autocomplete="email" placeholder="name@example.com"></label>
+          </div>
+        </div>
+        <div class="form-group">
+          <h3>推送计划（北京时间）</h3>
+          <fieldset class="choice-field">
+            <legend>推送方式</legend>
+            <div class="choice-options">
+              <label class="choice-option"><input type="radio" name="schedule-kind" value="daily" checked>每天</label>
+              <label class="choice-option"><input type="radio" name="schedule-kind" value="once">仅一次</label>
+            </div>
+          </fieldset>
+          <div class="fields schedule-fields">
+            <label><span id="time-label">每天推送时间</span><input id="time" type="time" value="20:00" required></label>
+          </div>
+        </div>
+        <div class="form-group">
+          <h3>消息读取范围（北京时间）</h3>
+          <div class="fields date-fields">
+            <label id="daily-date-field">消息日期<select id="date-offset"><option value="0">推送当天</option><option value="1">推送前一天</option></select></label>
+            <fieldset id="fixed-read-field" class="date-picker" hidden>
+              <legend id="fixed-read-label">本次总结日期</legend>
+              <div class="calendar-wrap">
+                <button id="read-date-button" class="date-trigger secondary" type="button" aria-haspopup="dialog" aria-expanded="false"></button>
+                <div id="read-calendar" class="calendar-popover" role="dialog" aria-label="选择本次总结日期" hidden>
+                  <div class="calendar-nav">
+                    <button id="calendar-prev" class="secondary" type="button" aria-label="上个月">‹</button>
+                    <strong id="calendar-month"></strong>
+                    <button id="calendar-next" class="secondary" type="button" aria-label="下个月">›</button>
+                  </div>
+                  <div class="calendar-weekdays" aria-hidden="true"><span>日</span><span>一</span><span>二</span><span>三</span><span>四</span><span>五</span><span>六</span></div>
+                  <div id="calendar-days" class="calendar-days"></div>
+                </div>
+              </div>
+              <input id="read-date" type="hidden">
+            </fieldset>
+          </div>
+          <div class="fields time-fields">
+            <label>开始时间<input id="read-start" type="time" value="08:00" required></label>
+            <label id="read-end-label">结束时间<input id="read-end" type="time" value="19:59" required></label>
+          </div>
+          <p id="range-preview" class="range-preview" role="status"></p>
+        </div>
+        <div class="form-footer"><p id="form-status" role="status" aria-live="polite"></p><div class="form-actions"><button id="cancel-edit" type="button" class="secondary" hidden>取消修改</button><button type="submit">保存任务</button></div></div>
+      </form>
+    </section>
+
+    <section aria-labelledby="jobs-heading">
+      <div class="jobs-heading-row">
+        <h2 id="jobs-heading">现有任务</h2>
+        <div id="jobs-notice" class="toast jobs-notice" role="status" aria-live="polite" hidden>
+          <span class="notice-message"></span><button class="notice-close" type="button" aria-label="关闭提示">×</button>
+        </div>
+      </div>
+      <p id="status" role="status"></p>
+      <div id="jobs" class="job-list"></div>
+    </section>
+    </div>
+  </main>
+  <script type="module" src="./app.js?v=0.9.37"></script>
+  <script type="module" src="./settings.js?v=0.9.37"></script>
+</body>
+</html>

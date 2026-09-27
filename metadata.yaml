@@ -1,0 +1,7 @@
+name: astrbot_plugin_group_memory
+display_name: QQ群聊总结
+short_desc: 记录并总结 QQ 群消息，定时前补读历史并推送至 QQ 或邮箱。
+desc: 通过 NapCat / OneBot 保存指定群的新消息；每天和单次任务执行前尝试补读群历史，再生成总结并推送至 QQ 私聊或邮箱。
+version: v0.9.37
+author: QQ群聊总结项目
+astrbot_version: '>=4.9.2'

@@ -1,0 +1,157 @@
+{
+  "record_groups": {
+    "description": "记录这些 QQ 群",
+    "type": "list",
+    "default": [],
+    "hint": "请在插件页面逐个添加群号并设置群聊名称。",
+    "obvious_hint": true,
+    "invisible": true
+  },
+  "reader_qq_ids": {
+    "description": "允许查询的 QQ 号",
+    "type": "list",
+    "default": [],
+    "hint": "请在插件页面逐个添加查询 QQ 号。",
+    "obvious_hint": true,
+    "invisible": true
+  },
+  "retention_days": {
+    "description": "本插件保留记录（天）",
+    "type": "int",
+    "default": 30,
+    "hint": "默认 30 天；到期记录会在后续清理时删除。",
+    "invisible": true
+  },
+  "enable_media_read": {
+    "description": "启用媒体读取（总开关）",
+    "type": "bool",
+    "default": true,
+    "hint": "关闭后，按需查询和自动推送均不识别图片；不保存图片文件。",
+    "invisible": true
+  },
+  "media_vision_provider": {
+    "description": "识图模型",
+    "type": "string",
+    "default": "",
+    "_special": "select_provider",
+    "hint": "选择支持图片的模型；留空则不识图。",
+    "invisible": true
+  },
+  "auto_summary_images": {
+    "description": "自动推送识别图片",
+    "type": "bool",
+    "default": true,
+    "hint": "开启后尝试读取范围内全部图片；关闭后只用文字。",
+    "invisible": true
+  },
+  "smtp_host": {
+    "description": "邮件推送：SMTP 服务器",
+    "type": "string",
+    "default": "",
+    "hint": "例如 smtp.example.com；仅用于选择邮箱接收的任务。",
+    "invisible": true
+  },
+  "smtp_port": {
+    "description": "邮件推送：SMTP 端口",
+    "type": "int",
+    "default": 465,
+    "hint": "SSL/TLS 通常用 465；STARTTLS 通常用 587。",
+    "invisible": true
+  },
+  "smtp_security": {
+    "description": "邮件推送：连接加密",
+    "type": "string",
+    "default": "SSL/TLS",
+    "options": [
+      "SSL/TLS",
+      "STARTTLS"
+    ],
+    "invisible": true
+  },
+  "smtp_username": {
+    "description": "邮件推送：SMTP 用户名",
+    "type": "string",
+    "default": "",
+    "hint": "通常是发件邮箱地址。",
+    "invisible": true
+  },
+  "smtp_password": {
+    "description": "邮件推送：SMTP 授权码",
+    "type": "string",
+    "default": "",
+    "secret": true,
+    "hint": "填写邮件服务商提供的 SMTP 授权码，不填写邮箱登录密码。",
+    "invisible": true
+  },
+  "smtp_sender": {
+    "description": "邮件推送：发件邮箱",
+    "type": "string",
+    "default": "",
+    "hint": "留空时使用 SMTP 用户名。",
+    "invisible": true
+  },
+  "summary_media_scope": {
+    "description": "按需总结的图片范围",
+    "type": "string",
+    "default": "全部媒体",
+    "options": [
+      "全部媒体",
+      "重点媒体"
+    ],
+    "hint": "仅影响手动提问；自动推送由下方开关控制。",
+    "invisible": true
+  },
+  "media_batch_concurrency": {
+    "description": "批量识图并行数",
+    "type": "int",
+    "default": 4,
+    "hint": "范围 1～4；遇到模型或 QQ 接口限流时调低。",
+    "invisible": true
+  },
+  "media_get_image_timeout_seconds": {
+    "description": "QQ 取图单次等待（秒）",
+    "type": "int",
+    "default": 25,
+    "hint": "仅用于 NapCat 取图地址，范围 5～60 秒。",
+    "invisible": true
+  },
+  "enable_webchat": {
+    "description": "允许网页聊天查询（可选）",
+    "type": "bool",
+    "default": false,
+    "hint": "开启后，还需填写下方网页查询者 ID。",
+    "invisible": true
+  },
+  "webchat_reader_ids": {
+    "description": "网页查询者 ID",
+    "type": "list",
+    "default": [],
+    "hint": "在 ChatUI 发送 /群记录身份，复制返回的 reader_id，每项一个。",
+    "invisible": true
+  },
+  "webchat_qq_platform_id": {
+    "description": "QQ 平台 ID（仅多接入时）",
+    "type": "string",
+    "default": "",
+    "hint": "只有一个 QQ 接入时留空。多个接入时，与下方机器人 QQ 号一起填写。",
+    "invisible": true
+  },
+  "webchat_qq_bot_id": {
+    "description": "机器人 QQ 号（仅多接入时）",
+    "type": "string",
+    "default": "",
+    "hint": "只有一个 QQ 接入时留空。多个接入时，与上方 QQ 平台 ID 一起填写。",
+    "invisible": true
+  },
+  "plugin_log_level": {
+    "description": "插件日志级别",
+    "type": "string",
+    "default": "标准",
+    "options": [
+      "仅错误",
+      "标准",
+      "详细"
+    ],
+    "hint": "仅控制本插件日志；详细模式额外记录任务开始与完成，不改变 AstrBot 全局日志。"
+  }
+}
