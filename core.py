@@ -24,7 +24,7 @@ def time_range(period, start, end, now):
         if not start or not end:
             raise ValueError('自定义时间必须同时提供 start 和 end。')
         def parse(value):
-            dt = datetime.fromisoformat(value)
+            dt = datetime.fromisoformat(value.removesuffix('Z') + '+00:00' if value.endswith('Z') else value)
             return (dt if dt.tzinfo else dt.replace(tzinfo=TZ)).timestamp()
         lower, upper = parse(start), parse(end)
     elif period in ('今天', 'today', ''):
